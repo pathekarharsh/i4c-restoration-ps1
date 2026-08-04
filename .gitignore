@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datasets
+data/raw/
+*.npy
+
+# Training outputs
+outputs/
+weights/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,29 @@
+# KLA Image Restoration Config
+
+# Global reproducibility seed
+seed: 42
+
+# Dataset configurations
+dataset:
+  train_pairs_csv: "data/train_pairs.csv"
+  val_pairs_csv: "data/val_pairs.csv"
+  raw_dir: "data/raw"
+  val_split_ratio: 0.15 # Defined in Day 2 for train/val split
+
+# Model architecture baseline options (tune during training)
+model:
+  name: "NAFNet-lite" # compact CNN / NAFNet-lite style
+  in_channels: 1      # single-channel grayscale images
+  out_channels: 1     # single-channel output
+  num_features: 96    # baseline features count (tune for 2M-8M params target)
+  num_blocks: 12      # number of residual blocks
+
+# Training defaults
+training:
+  batch_size: 8
+  epochs: 100
+  learning_rate: 0.0002
+  lr_schedule: "cosine"
+  mixed_precision: true
+  save_checkpoint_interval: 1
+  early_stopping_patience: 15
