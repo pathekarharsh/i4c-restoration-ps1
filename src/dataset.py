@@ -4,7 +4,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from src.synthetic_degrade import degrade_image
+# (Synthetic degradation imported lazily below to optimize evaluation script startup time)
 
 # Robust normalization parameters based on 1st and 99th percentiles of the training dataset.
 # Using min_val = -0.15 and max_val = 1.15 to preserve noise overshoot symmetrically and prevent bias.
@@ -63,6 +63,7 @@ class KLANDataset(Dataset):
         
         if use_synthetic:
             # Generate synthetic degraded image online from the clean GT HR image
+            from src.synthetic_degrade import degrade_image
             degraded_img = degrade_image(gt_img)
         else:
             # Load real degraded LR image

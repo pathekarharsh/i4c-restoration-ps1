@@ -41,8 +41,9 @@ def save_image_or_array(out_path, restored, ext):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate KLA Image Restoration Model")
-    parser.add_argument("--input_dir", type=str, required=True, help="Directory containing test images/arrays")
-    parser.add_argument("--output_dir", type=str, required=True, help="Directory to save restored outputs")
+    parser.add_argument("--input_dir", type=str, default=None, help="Directory containing test images/arrays")
+    parser.add_argument("--output_dir", type=str, default=None, help="Directory to save restored outputs")
+    parser.add_argument("positional_args", nargs="*", help="Positional arguments: [input_dir, output_dir]")
     args = parser.parse_args()
 
     # 1. Setup device
@@ -103,8 +104,17 @@ def main():
         print("Using CPU FP32 Inference.")
 
     # 4. Read inputs and group them by shape to batch process efficiently
-    input_dir = args.input_dir
-    output_dir = args.output_dir
+    if args.input_dir and args.output_dir:
+        input_dir = args.input_dir
+        output_dir = args.output_dir
+    elif len(args.positional_args) >= 2:
+        input_dir = args.positional_args[0]
+        output_dir = args.positional_args[1]
+    else:
+        parser.print_help()
+        print("\nError: Please provide both input_dir and output_dir, either as flags (--input_dir / --output_dir) or as positional arguments.")
+        return
+
     os.makedirs(output_dir, exist_ok=True)
 
     supported_exts = (".npy", ".png", ".jpg", ".jpeg", ".tiff", ".tif")
