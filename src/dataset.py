@@ -35,6 +35,9 @@ class KLANDataset(Dataset):
         self.is_train = is_train
         self.synthetic_prob = synthetic_prob
         self.repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.cache_in_memory = True
+        self.gt_cache = {}
+        self.degraded_cache = {}
         
         self.pairs = []
         if not os.path.exists(csv_file):
@@ -56,7 +59,12 @@ class KLANDataset(Dataset):
         degraded_path = os.path.join(self.repo_root, pair["degraded_path"])
         
         # Load clean HR GT image
-        gt_img = np.load(gt_path).astype(np.float32)
+        if self.cache_in_memory and idx in self.gt_cache:
+            gt_img = self.gt_cache[idx]
+        else:
+            gt_img = np.load(gt_path).astype(np.float32)
+            if self.cache_in_memory:
+                self.gt_cache[idx] = gt_img
         
         # Decide if we should generate synthetic degradation or use real pair (only during training)
         use_synthetic = self.is_train and (random.random() < self.synthetic_prob)
@@ -67,7 +75,12 @@ class KLANDataset(Dataset):
             degraded_img = degrade_image(gt_img)
         else:
             # Load real degraded LR image
-            degraded_img = np.load(degraded_path).astype(np.float32)
+            if self.cache_in_memory and idx in self.degraded_cache:
+                degraded_img = self.degraded_cache[idx]
+            else:
+                degraded_img = np.load(degraded_path).astype(np.float32)
+                if self.cache_in_memory:
+                    self.degraded_cache[idx] = degraded_img
             
         # Apply Spatial Augmentations (Only during training)
         if self.is_train:
