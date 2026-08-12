@@ -177,9 +177,18 @@ def main():
 
     # 5. Mixed Precision Setup (only enabled on CUDA for stability)
     use_amp = config["training"].get("mixed_precision", True) and device.type == "cuda"
-    scaler = torch.amp.GradScaler() if use_amp else None
+    scaler = None
     if use_amp:
-        print("AMP Mixed Precision enabled (CUDA).")
+        try:
+            scaler = torch.amp.GradScaler()
+            print("AMP Mixed Precision enabled (CUDA, torch.amp.GradScaler).")
+        except AttributeError:
+            try:
+                scaler = torch.cuda.amp.GradScaler()
+                print("AMP Mixed Precision enabled (CUDA, torch.cuda.amp.GradScaler).")
+            except Exception as e:
+                use_amp = False
+                print(f"AMP disabled due to initialization error: {e}")
 
     # Best metric tracker
     best_psnr = -1.0
@@ -200,7 +209,12 @@ def main():
             optimizer.zero_grad()
             
             if use_amp:
-                with torch.amp.autocast(device_type="cuda"):
+                try:
+                    autocast_ctx = torch.amp.autocast(device_type="cuda")
+                except AttributeError:
+                    autocast_ctx = torch.cuda.amp.autocast()
+                
+                with autocast_ctx:
                     outputs = model(inputs)
                     loss, logs = criterion(outputs, targets)
                 scaler.scale(loss).backward()

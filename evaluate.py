@@ -90,8 +90,12 @@ def main():
         def __exit__(self, exc_type, exc_val, exc_tb): return None
 
     if device_type == "cuda":
-        autocast_ctx = torch.amp.autocast(device_type="cuda")
-        print("Using FP16 Autocast Inference (CUDA).")
+        try:
+            autocast_ctx = torch.amp.autocast(device_type="cuda")
+            print("Using FP16 Autocast Inference (CUDA, torch.amp.autocast).")
+        except AttributeError:
+            autocast_ctx = torch.cuda.amp.autocast()
+            print("Using FP16 Autocast Inference (CUDA, torch.cuda.amp.autocast).")
     elif device_type == "mps":
         try:
             autocast_ctx = torch.amp.autocast(device_type="mps")
