@@ -15,7 +15,7 @@ def main():
     # 1. Setup paths and device
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     val_csv = os.path.join(repo_root, "data", "val_pairs.csv")
-    model_path = os.path.join(repo_root, "weights", "model_best.pt")
+    model_path = os.path.join(repo_root, "models", "model_best.pt")
     outputs_dir = os.path.join(repo_root, "outputs")
     os.makedirs(outputs_dir, exist_ok=True)
 

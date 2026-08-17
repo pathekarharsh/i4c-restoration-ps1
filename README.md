@@ -8,21 +8,21 @@ The solution uses a **Nonlinear Activation-Free Network (NAFNet-lite)** architec
 
 ## 1. Project Directory Structure
 ```
-i4c_update/
+team_name/
 ├── config.yaml          # Hyperparameters and directory mappings
-├── requirements.txt     # Frozen Python dependencies
+├── requirements.txt     # Frozen Python dependencies with version details
 ├── README.md            # Repository documentation
-├── evaluate.py          # Mandatory evaluation CLI script
+├── run.py               # Mandatory evaluation entry point script
 ├── train.py             # Main PyTorch training & validation loop
 ├── src/
-│   ├── dataset.py       # Custom dataset, robust normalization, and augmentations
+│   ├── dataset.py       # Custom dataset, robust normalization, and RAM caching
 │   ├── losses.py        # Combined loss (Charbonnier + SSIM + LPIPS)
 │   ├── metrices.py      # Evaluation metrics (PSNR, SSIM, LPIPS)
 │   ├── model.py         # NAFNet-lite model definition
 │   ├── split_dataset.py # Deterministic train/validation cluster split
 │   └── synthetic_degrade.py # Online speckle noise and blur degradation models
-├── weights/
-│   └── model_best.pt    # Best trained model checkpoint
+├── models/
+│   └── model_best.pt    # Best trained model checkpoint weights
 └── outputs/
     ├── training_log.csv # CSV metrics log per epoch
     └── restored_test/   # Final restored test outputs
@@ -47,17 +47,18 @@ pip install -r requirements.txt
 
 ## 3. Evaluation Guide (Submission Interface)
 
-To run inference on a folder of test files, execute `evaluate.py` using the following interface:
+To run inference on a folder of test files, execute `run.py` using the following interface:
 
 ```bash
-python evaluate.py --input_dir /path/to/test/images --output_dir /path/to/save
+python run.py <input-dir> <output-dir>
 ```
 
 ### Key Script Features:
-*   **Automatic Model Loading**: Automatically loads the best weights from `weights/model_best.pt` inside the repository.
+*   **Automatic Model Loading**: Automatically loads the best weights from `models/model_best.pt` inside the repository.
 *   **Dynamic Format Matching**: Detects whether inputs are `.npy` arrays or standard images (`.png`, `.jpg`, `.jpeg`, `.tiff`, `.tif`) and saves outputs in the **exact same format**.
+*   **No-Disk I/O RAM Cache**: Caches inputs directly in system memory during DataLoader access to bypass slow disk reads.
 *   **Fast Batch Processing**: Scans PIL headers to group images by shape, executing inference in uniform batches for maximum GPU utilization.
-*   **Precision Optimization**: Runs inference wrapped in `torch.no_grad()`, `model.eval()`, and utilizes **FP16 Autocast** (`torch.amp.autocast`) on CUDA and MPS GPUs.
+*   **Precision Optimization**: Runs inference wrapped in `torch.no_grad()`, `model.eval()`, and utilizes **FP16 Autocast** (`torch.amp.autocast` / `torch.cuda.amp.autocast`) on CUDA and MPS GPUs.
 
 ---
 
@@ -75,7 +76,7 @@ python3 src/split_dataset.py
 # 2. Execute the PyTorch training loop
 python3 train.py
 ```
-*   *Note: Checkpoints will be saved epoch-by-epoch to `weights/` and metrics will be logged to `outputs/training_log.csv`.*
+*   *Note: Checkpoints will be saved epoch-by-epoch to `models/` and metrics will be logged to `outputs/training_log.csv`.*
 
 ---
 

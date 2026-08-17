@@ -105,7 +105,7 @@ def main():
     set_seed(config.get("seed", 42))
 
     # Set up directories
-    weights_dir = os.path.join(repo_root, "weights")
+    weights_dir = os.path.join(repo_root, "models")
     outputs_dir = os.path.join(repo_root, "outputs")
     os.makedirs(weights_dir, exist_ok=True)
     os.makedirs(outputs_dir, exist_ok=True)
@@ -209,6 +209,7 @@ def main():
             optimizer.zero_grad()
             
             if use_amp:
+                assert scaler is not None
                 try:
                     autocast_ctx = torch.amp.autocast(device_type="cuda")
                 except AttributeError:
